@@ -1,0 +1,36 @@
+{
+  "name": "jenkinsagent",
+  "version": "1.0.0",
+  "description": "Jenkins Agent",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "NODE_ENV=development nodemon",
+    "server": "node --harmony src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmorille/jenkinsAgent.git"
+  },
+  "keywords": [
+    "DialogFlow"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jmorille/jenkinsAgent/issues"
+  },
+  "homepage": "https://github.com/jmorille/jenkinsAgent#readme",
+  "dependencies": {
+    "koa": "^2.5.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-compress": "^2.0.0",
+    "koa-favicon": "^2.0.0",
+    "koa-json-error": "^3.1.2",
+    "koa-logger": "^3.2.0",
+    "koa-router": "^7.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.2"
+  }
+}
