@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jmorille/jenkinsAgent#readme",
   "dependencies": {
+    "jenkins": "^0.20.1",
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",
     "koa-compress": "^2.0.0",

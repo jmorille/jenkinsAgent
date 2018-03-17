@@ -1,0 +1,5 @@
+{
+  "baseUrl": "http://admin:admin@thor:8080",
+  "promisify": true,
+  "crumbIssuer": true
+}
