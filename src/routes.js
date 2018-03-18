@@ -15,6 +15,7 @@ router.post('/dialog', dialogController.intent);
 router.get('/jenkins/info', jenkinsController.info);
 router.get('/jenkins/jobs', jenkinsController.jobList);
 router.get('/jenkins/job/build', jenkinsController.jobBuild);
+router.get('/jenkins/job/copy', jenkinsController.jobCopy);
 
 
 

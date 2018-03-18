@@ -1,5 +1,5 @@
 const jenkinsConfig = require("../config/jenkins.json");
-const jenkins = require('jenkins')(jenkinsConfig);
+const jenkins = require('jenkins')(Object.assign({},jenkinsConfig));
 
 
 exports.info = async ctx => {
@@ -14,12 +14,25 @@ exports.jobList = async ctx => {
     });
 };
 
+function deployJobName(app) {
+    return `deploy-${app}-release`;
+}
 
 exports.jobBuild = async ctx => {
-    const opt = {
-        name: "deploy-HDF-release"
-    }
-    await jenkins.job.build(opt).then(res => {
+    const name = deployJobName('HDF');
+    await jenkins.job.build({name}).then(res => {
         ctx.body = res
+
     });
 };
+
+
+exports.jobCopy = async ctx => {
+    const from = deployJobName('HDF');
+    const to = deployJobName('PHP-MONITOR');
+    await jenkins.job.copy(from, to).then(res => {
+        ctx.body = {
+            from, to
+        }
+    });
+}
