@@ -30,19 +30,23 @@ exports.intent = ctx => {
 };
 
 function processV1Request(req) {
-    console.log('-----> processV1Request');
+    console.log('-----> processV1 Request');
     let action = req.result.action; // https://dialogflow.com/docs/actions-and-parameters
     let parameters = req.result.parameters; // https://dialogflow.com/docs/actions-and-parameters
     let inputContexts = req.result.contexts; // https://dialogflow.com/docs/contexts
     let requestSource = (req.originalRequest) ? req.originalRequest.source : undefined;
+    console.log("session id : ", req.sessionId);
+    console.log("user : ", req.originalRequest.data.user);
     console.log("action : ", action, " ---> parameters : ", parameters);
     handleAction(action, parameters);
 }
 
 function processV2Request(req) {
-    console.log('-----> processV2Request');
-// An action is a string used to identify what needs to be done in fulfillment
+    console.log('-----> processV2 Request');
+    // An action is a string used to identify what needs to be done in fulfillment
     let action = (req.queryResult.action) ? req.queryResult.action : 'default';
+    // Action incomplete
+
     // Parameters are any entities that Dialogflow has extracted from the request.
     let parameters = req.queryResult.parameters || {}; // https://dialogflow.com/docs/actions-and-parameters
     // Contexts are objects used to track and store conversation state
@@ -51,6 +55,7 @@ function processV2Request(req) {
     let requestSource = (req.originalDetectIntentRequest) ? req.originalDetectIntentRequest.source : undefined;
     // Get the session ID to differentiate calls from different users
     let session = (req.session) ? req.session : undefined;
+    console.log("session id : ", session);
     console.log("action : ", action, " ---> parameters : ", parameters);
     handleAction(action, parameters);
 }
