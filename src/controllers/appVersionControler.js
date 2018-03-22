@@ -1,44 +1,29 @@
 const Router = require('koa-router');
-const fetch = require('node-fetch');
-const properties = require("properties");
+
+const appVersion = require('../service/appVersionService');
 
 const router = new Router({
     prefix: '/version'
 });
 
-router.get('/:app', ctx => {
+router.get("/:app/:env", ctx => {
     const app = ctx.params.app;
-    return getVersion(app).then(props => {
+    const envLabel = ctx.params.env;
+    const env = conv[envLabel] || envLabel;
+    return appVersion.getVersion(app, env).then(props => {
         ctx.body = {
-            name: "version",
+            name: app,
             app: props
         }
 
     });
 });
 
-const apps = {
-    "PAI" : {
-        dns: "www.groupagrica.com"
-    },
-    "HDF": {
-        dns: "hdf.agrica.loc"
-    }
+const conv = {
+    'Qualification': 'qualif',
+    'Recette': 'rec',
+    'Production': 'prod',
+    'Developement': 'dev',
 };
-
-function getAppUrl(app) {
-    let base =  apps[app].dns;
-    return `https://${base}/version.txt`
-}
-
-
-function getVersion(app) {
-    const url = getAppUrl(app);
-    console.log(url);
-    return fetch(url)
-        .then(res => res.text())
-        .then(data => properties.parse(data));
-}
-
 
 module.exports = router;
