@@ -18,23 +18,26 @@ router.get('/:app', ctx => {
 });
 
 const apps = {
-    HDF: "https://www.groupagrica.com"
+    "PAI" : {
+        dns: "www.groupagrica.com"
+    },
+    "HDF": {
+        dns: "hdf.agrica.loc"
+    }
 };
 
 function getAppUrl(app) {
-    let base =  apps[app];
-    return `${base}/version.txt`
+    let base =  apps[app].dns;
+    return `https://${base}/version.txt`
 }
 
 
 function getVersion(app) {
     const url = getAppUrl(app);
-    return fetch(url).then(res => res.text()).then(data => {
-        console.log(data);
-        let props = properties.parse(data);
-        console.log(props);
-        return props;
-    });
+    console.log(url);
+    return fetch(url)
+        .then(res => res.text())
+        .then(data => properties.parse(data));
 }
 
 
