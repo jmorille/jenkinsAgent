@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development nodemon --quiet",
-    "server": "node --harmony src/index.js"
+    "server": "node --harmony src/index.js",
+    "build": "webpack --mode='production'"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/jmorille/jenkinsAgent#readme",
   "dependencies": {
     "actions-on-google": "^1.10.0",
+    "dist": "^0.1.2",
     "jenkins": "^0.20.1",
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",
@@ -34,6 +36,10 @@
     "node-fetch": "^2.1.1"
   },
   "devDependencies": {
-    "nodemon": "^1.17.2"
+    "nodemon": "^1.17.2",
+    "shebang-loader": "0.0.1",
+    "webpack": "^4.3.0",
+    "webpack-cli": "^2.0.13",
+    "webpack-node-externals": "^1.6.0"
   }
 }
