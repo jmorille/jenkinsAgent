@@ -60,6 +60,14 @@ function processV2Request(req) {
     handleAction(action, parameters);
 }
 
+const ations = {
+    'deploy': deployRelease.bind(this),
+    'compile': compileApp.bind(this),
+    'release': releaseApp.bind(this),
+    'versionRequest': requestVersion.bind(this)
+}
+
+
 async function handleAction(action, parameters) {
     let name = '';
     let appName = parameters.app;
@@ -77,5 +85,30 @@ async function handleAction(action, parameters) {
     await jenkins.job.build({name}).then(res => {
         console.log('Jenkins Job : ', name, " ==> ",res);
     });
+
+}
+
+
+async function deployRelease(action, parameters) {
+    let appName = parameters.app;
+    let name = `${action}-${appName}-release`;
+    jenkins.job.build({name}).then(res => {
+        console.log('Jenkins Job : ', name, " ==> ",res);
+        return res;
+    });
+}
+
+async function compileApp(action, parameters) {
+    let appName = parameters.app;
+    let name = `ci-${appName}-branch-dev`;
+
+}
+
+async function releaseApp(action, parameters) {
+    let appName = parameters.app;
+    let name = `ci-${appName}-branch-dev`;
+}
+
+async function requestVersion(action, parameters) {
 
 }

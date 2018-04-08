@@ -24,6 +24,7 @@
   "homepage": "https://github.com/jmorille/jenkinsAgent#readme",
   "dependencies": {
     "actions-on-google": "^1.10.0",
+    "cson": "^5.1.0",
     "dist": "^0.1.2",
     "jenkins": "^0.20.1",
     "koa": "^2.5.0",

@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const properties = require("properties");
-
+const CSON = require('cson');
 
 const apps = {
     "PAI": {
@@ -29,6 +29,10 @@ function getVersion(app, env) {
     console.log(url);
     return fetch(url)
         .then(res => res.text())
+        //.then(data => CSON.parse(data));
+        .then(data => {
+            return data.replace(': ');
+        })
         .then(data => properties.parse(data));
 }
 

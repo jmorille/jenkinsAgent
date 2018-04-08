@@ -1,0 +1,5 @@
+Maven: "com.agrica.pai-public:pai-public"
+Version: "2.2.1"
+Date: "29/03/2018 15:53:18 GMT"
+Commit: "09a8ede7"
+Branch: "UNKNOWN"
