@@ -88,37 +88,6 @@ function processV2Request(req) {
         return Object.assign({}, res, actionRes);
     });
     return actionRes;
-    // const res =  {
-    //     "fulfillmentMessages": [
-    //         {
-    //             "card": {
-    //                 "title": "card title",
-    //                 "subtitle": "card text",
-    //                 "imageUri": "https://assistant.google.com/static/images/molecule/Molecule-Formation-stop.png",
-    //                 "buttons": [
-    //                     {
-    //                         "text": "button text",
-    //                         "postback": "https://assistant.google.com/"
-    //                     }
-    //                 ]
-    //             }
-    //         }
-    //     ]
-    //
-    // };
-
-    // const res2 = Object.assign({}, req);
-    // res2.queryResult.fulfillmentText = "Oh la la";
-    // res2.queryResult.fulfillmentMessages= [
-    //     {
-    //         "text": {
-    //             "text": [
-    //                 "Oh la la"
-    //             ]
-    //         }
-    //     }
-    // ]
-    // return res2;
 }
 
 const actions = {
@@ -168,17 +137,40 @@ function callJenkinsJob(name, parameters) {
 }
 
 
-
-
-
 function requestVersion(req, parameters) {
     const app = parameters.app;
     const envLabel = parameters.env;
     return appVersion.getVersion(app, getEnvCode(envLabel))
         .then(data => {
             const version = data.Version;
+            console.log("app version", data);
+            const text = `La ${envLabel} de ${app} en est en version ${version} `;
             return {
-                "fulfillmentText": `La ${envLabel} de ${app} en est en version ${version}`
+                "fulfillmentText": text,
+                "payload": {
+                    "google": {
+                        "expectUserResponse": true,
+                        "richResponse": {
+                            "items": [
+                                {
+                                    "simpleResponse": {
+                                        "textToSpeech": text
+                                    }
+                                },
+                                {
+                                    "basicCard": {
+                                        "title": `Application ${app}`,
+                                        "subtitle": ` ${envLabel}`,
+                                        "formattedText": ` 
+                                         **Builder le** ${data.Date}  
+                                         **Commit** ${data.Commit}`
+
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         });
 }
