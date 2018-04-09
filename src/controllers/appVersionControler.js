@@ -13,7 +13,8 @@ router.get("/:app/:env", ctx => {
     return appVersion.getVersion(app, env).then(props => {
         ctx.body = {
             name: app,
-            app: props
+            env: env,
+            version: props["Version"]
         }
 
     });

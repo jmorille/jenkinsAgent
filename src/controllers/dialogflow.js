@@ -23,7 +23,10 @@ exports.intent = ctx => {
         return ctx.throw(400, 'Invalid Webhook Request (expecting v1 or v2 webhook request)', req);
     }
     // Premare response
-    ctx.body = response;
+    let res =  Object.assign({}, req, response);
+    res.fulfillmentText= "Hipica jep pauvre con";
+    console.log('My response : ', JSON.stringify(res, undefined, 2) );
+    ctx.body = res;
     //require('fs').writeFile('dialogv2.json', JSON.stringify( req), 'utf8');
 
     //"speech" is the spoken version of the response, "displayText" is the visual version
@@ -38,7 +41,7 @@ function processV1Request(req) {
     console.log("session id : ", req.sessionId);
     console.log("user : ", req.originalRequest.data.user);
     console.log("action : ", action, " ---> parameters : ", parameters);
-    handleAction(action, parameters);
+    return handleAction(action, parameters);
 }
 
 function processV2Request(req) {
@@ -57,7 +60,7 @@ function processV2Request(req) {
     let session = (req.session) ? req.session : undefined;
     console.log("session id : ", session);
     console.log("action : ", action, " ---> parameters : ", parameters);
-    handleAction(action, parameters);
+    return handleAction(action, parameters);
 }
 
 const ations = {
@@ -69,23 +72,10 @@ const ations = {
 
 
 async function handleAction(action, parameters) {
-    let name = '';
-    let appName = parameters.app;
-    switch (action) {
-        case 'deploy':
-            name = `${action}-${appName}-release`;
-            break;
-        case 'compile':
-            name = `ci-${appName}-branch-dev`;
-            break;
-        case 'release':
-            name = `ci-${appName}-release`;
-            break;
-    }
-    await jenkins.job.build({name}).then(res => {
-        console.log('Jenkins Job : ', name, " ==> ",res);
-    });
-
+    const fn = ations[action];
+    console.log(`Action ${action} fn`, fn);
+    console.log("action fn", fn);
+    return fn.call(this, action, parameters);
 }
 
 
@@ -110,5 +100,8 @@ async function releaseApp(action, parameters) {
 }
 
 async function requestVersion(action, parameters) {
-
+    console.log('')
+    return {
+        fulfillmentText: "Hipica jep pauvre con"
+    }
 }
