@@ -138,7 +138,7 @@ function handleAction(action, parameters) {
 function deployRelease(req, parameters) {
     let appName = parameters.app;
     let name = `deploy-${appName}-release`;
-    return jenkins.job.build({name}).then(res => {
+    return callJenkinsJob(name, parameters).then(res => {
         console.log('Jenkins Job : ', name, " ==> ", res);
         return res;
     });
@@ -147,13 +147,29 @@ function deployRelease(req, parameters) {
 function compileApp(req, parameters) {
     let appName = parameters.app;
     let name = `ci-${appName}-branch-dev`;
-
+    return callJenkinsJob(name, parameters).then(res => {
+        console.log('Jenkins Job : ', name, " ==> ", res);
+        return res;
+    });
 }
 
 function releaseApp(req, parameters) {
     let appName = parameters.app;
     let name = `ci-${appName}-branch-dev`;
+    return callJenkinsJob(name, parameters).then(res => {
+        console.log('Jenkins Job : ', name, " ==> ", res);
+        return res;
+    });
 }
+
+function callJenkinsJob(name, parameters) {
+    // TODO Add Paramters to jenkins query
+    return jenkins.job.build({name});
+}
+
+
+
+
 
 function requestVersion(req, parameters) {
     const app = parameters.app;
