@@ -1,35 +1,53 @@
+const uuidv4 = require('uuid/v4');
+
+
 const jenkinsConfig = require("../config/jenkins.json");
-const jenkins = require('jenkins')(Object.assign({},jenkinsConfig));
+const jenkins = require('jenkins')(Object.assign({}, jenkinsConfig));
+
+const appVersion = require('../service/appVersionService');
 
 
-exports.index = ctx =>{
-  ctx.body = {
-      service: "Jenkins Agent"
-  }
+exports.index = ctx => {
+    ctx.body = {
+        service: "Jenkins Agent"
+    }
 };
+
+const envCodes = {
+    'production': 'prod',
+    'recette': 'rec',
+    'qualification': 'qa'
+
+};
+
+function getEnvCode(envLabel) {
+    return envCodes[envLabel] || envLabel;
+}
+
 // https://dialogflow.com/docs/reference/api-v2/rest/v2beta1/WebhookRequest
 
 exports.intent = ctx => {
-    console.log('----------', JSON.parse(JSON.stringify( ctx.request.body)));
+    // console.log('Request ----------', JSON.parse(JSON.stringify( ctx.request.body)));
     const req = ctx.request.body;
 
-    let response ;
+    let response;
     if (req.result) {
-        response =processV1Request(req);
+        response = processV1Request(req);
     } else if (req.queryResult) {
         response = processV2Request(req);
     } else {
         console.log('Invalid Request', req);
         return ctx.throw(400, 'Invalid Webhook Request (expecting v1 or v2 webhook request)', req);
     }
-    // Premare response
-    let res =  Object.assign({}, req, response);
-    res.fulfillmentText= "Hipica jep pauvre con";
-    console.log('My response : ', JSON.stringify(res, undefined, 2) );
-    ctx.body = res;
-    //require('fs').writeFile('dialogv2.json', JSON.stringify( req), 'utf8');
-
-    //"speech" is the spoken version of the response, "displayText" is the visual version
+    // Prepare response
+    return response.then(body => {
+        console.error('My response : ', JSON.stringify(body, undefined, 2));
+        ctx.body = body;
+    }).catch(err => {
+        ctx.body = {
+            "fulfillmentText": "C'est embarassant, il y a une petite erreur technique"
+        }
+    })
 };
 
 function processV1Request(req) {
@@ -60,10 +78,50 @@ function processV2Request(req) {
     let session = (req.session) ? req.session : undefined;
     console.log("session id : ", session);
     console.log("action : ", action, " ---> parameters : ", parameters);
-    return handleAction(action, parameters);
+    // response
+
+    const actionRes = handleAction(action, parameters).then(actionRes => {
+        console.log("Action response", JSON.stringify(actionRes));
+        const res = {
+            "outputContexts": req.queryResult.outputContexts
+        };
+        return Object.assign({}, res, actionRes);
+    });
+    return actionRes;
+    // const res =  {
+    //     "fulfillmentMessages": [
+    //         {
+    //             "card": {
+    //                 "title": "card title",
+    //                 "subtitle": "card text",
+    //                 "imageUri": "https://assistant.google.com/static/images/molecule/Molecule-Formation-stop.png",
+    //                 "buttons": [
+    //                     {
+    //                         "text": "button text",
+    //                         "postback": "https://assistant.google.com/"
+    //                     }
+    //                 ]
+    //             }
+    //         }
+    //     ]
+    //
+    // };
+
+    // const res2 = Object.assign({}, req);
+    // res2.queryResult.fulfillmentText = "Oh la la";
+    // res2.queryResult.fulfillmentMessages= [
+    //     {
+    //         "text": {
+    //             "text": [
+    //                 "Oh la la"
+    //             ]
+    //         }
+    //     }
+    // ]
+    // return res2;
 }
 
-const ations = {
+const actions = {
     'deploy': deployRelease.bind(this),
     'compile': compileApp.bind(this),
     'release': releaseApp.bind(this),
@@ -71,37 +129,40 @@ const ations = {
 }
 
 
-async function handleAction(action, parameters) {
-    const fn = ations[action];
-    console.log(`Action ${action} fn`, fn);
-    console.log("action fn", fn);
-    return fn.call(this, action, parameters);
+function handleAction(action, parameters) {
+    const fn = actions[action];
+    return fn(action, parameters);
 }
 
 
-async function deployRelease(action, parameters) {
+function deployRelease(req, parameters) {
     let appName = parameters.app;
-    let name = `${action}-${appName}-release`;
-    jenkins.job.build({name}).then(res => {
-        console.log('Jenkins Job : ', name, " ==> ",res);
+    let name = `deploy-${appName}-release`;
+    return jenkins.job.build({name}).then(res => {
+        console.log('Jenkins Job : ', name, " ==> ", res);
         return res;
     });
 }
 
-async function compileApp(action, parameters) {
+function compileApp(req, parameters) {
     let appName = parameters.app;
     let name = `ci-${appName}-branch-dev`;
 
 }
 
-async function releaseApp(action, parameters) {
+function releaseApp(req, parameters) {
     let appName = parameters.app;
     let name = `ci-${appName}-branch-dev`;
 }
 
-async function requestVersion(action, parameters) {
-    console.log('')
-    return {
-        fulfillmentText: "Hipica jep pauvre con"
-    }
+function requestVersion(req, parameters) {
+    const app = parameters.app;
+    const envLabel = parameters.env;
+    return appVersion.getVersion(app, getEnvCode(envLabel))
+        .then(data => {
+            const version = data.Version;
+            return {
+                "fulfillmentText": `La ${envLabel} de ${app} en est en version ${version}`
+            }
+        });
 }

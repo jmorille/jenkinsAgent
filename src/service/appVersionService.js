@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const properties = require("properties");
-const CSON = require('cson');
 const apps = require('../config/dory.json');
 
 
@@ -24,14 +23,13 @@ function getAppUrl(app, env) {
 
 function getVersion(app, env) {
     const url = getAppUrl(app, env);
-    console.log(url);
+    console.log("Request version url :",url);
     return fetch(url)
         .then(res => res.text())
-        //.then(data => CSON.parse(data));
         .then(data => {
             return data.replace(': ','= ');
         })
-        .then(data => properties.parse(data));
+        .then(data => properties.parse(data))
 }
 
 
