@@ -6,7 +6,6 @@ const apps = require('../config/dory.json');
 
 function getAppUrl(app, env) {
     let dns = apps[app][env]["url"];
-    console.log("Found ", dns.dmz[0], env);
     let base;
     if(dns.dmz.length != 0) {
         base = dns.dmz[0];

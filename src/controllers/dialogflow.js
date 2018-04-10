@@ -41,7 +41,7 @@ exports.intent = ctx => {
     }
     // Prepare response
     return response.then(body => {
-        console.error('My response : ', JSON.stringify(body, undefined, 2));
+        //console.error('My response : ', JSON.stringify(body, undefined, 2));
         ctx.body = body;
     }).catch(err => {
         ctx.body = {
@@ -143,8 +143,26 @@ function requestVersion(req, parameters) {
     return appVersion.getVersion(app, getEnvCode(envLabel))
         .then(data => {
             const version = data.Version;
-            console.log("app version", data);
-            const text = `La ${envLabel} de ${app} en est en version ${version} `;
+            let text;
+            console.log("data : " ,data);
+            console.log("version : " , version);
+            if(!version) {
+                text = `La version de cette application n'a pas été trouvée `;
+            } else {
+                text = `La ${envLabel} de ${app} en est en version ${version} `;
+            }
+
+            // console.log("app version", data);
+            const basicCard = {
+                "basicCard": {
+                    "title": `Application ${app}`,
+                    "subtitle": ` ${envLabel}`,
+                    "formattedText": ` 
+                                         **Builder le** ${data.Date}  
+                                         **Commit** ${data.Commit}`
+
+                }
+            };
             return {
                 "fulfillmentText": text,
                 "payload": {
@@ -158,14 +176,7 @@ function requestVersion(req, parameters) {
                                     }
                                 },
                                 {
-                                    "basicCard": {
-                                        "title": `Application ${app}`,
-                                        "subtitle": ` ${envLabel}`,
-                                        "formattedText": ` 
-                                         **Builder le** ${data.Date}  
-                                         **Commit** ${data.Commit}`
-
-                                    }
+                                    basicCard
                                 }
                             ]
                         }
