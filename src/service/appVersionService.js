@@ -5,18 +5,24 @@ const apps = require('../config/dory.json');
 
 
 function getAppUrl(app, env) {
-    let dns = apps[app][env]["url"];
-    let base;
-    if(dns.dmz.length != 0) {
-        base = dns.dmz[0];
-    } else {
-        base = dns.lan[0];
-    }
-    // let base = dns[env] ? dns[env] : env + '-' + dns.prod;
 
-    if(base[base.length - 1] === '/')
-        return `${base}version.txt`;
-    return `${base}/version.txt`
+    let base;
+    let dns;
+    if(!(dns = apps[app][env]["url"])) {
+        throw new Error('Aucune URL trouvée pour cette application sur l\'environnement renseigné');
+    } else {
+
+        if (dns.dmz) {
+            base = dns.dmz[0];
+        } else if (dns.lan) {
+            base = dns.lan[0];
+        } else {
+            throw new Error('Aucune adresse trouvée');
+        }
+        // let base = dns[env] ? dns[env] : env + '-' + dns.prod;
+
+        return (base[base.length - 1] === '/') ? `${base}version.txt` : `${base}/version.txt`;
+    }
 }
 
 

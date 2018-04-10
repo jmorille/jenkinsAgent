@@ -143,6 +143,7 @@ function requestVersion(req, parameters) {
     return appVersion.getVersion(app, getEnvCode(envLabel))
         .then(data => {
             const version = data.Version;
+            const date = data.Date;
             let text;
             console.log("data : " ,data);
             console.log("version : " , version);
@@ -156,9 +157,9 @@ function requestVersion(req, parameters) {
             const basicCard = {
                 "basicCard": {
                     "title": `Application ${app}`,
-                    "subtitle": ` ${envLabel}`,
+                    "subtitle": `Environnement de ${envLabel}`,
                     "formattedText": ` 
-                                         **Builder le** ${data.Date}  
+                                         **Buildée le** ${date}  
                                          **Commit** ${data.Commit}`
 
                 }
@@ -172,12 +173,11 @@ function requestVersion(req, parameters) {
                             "items": [
                                 {
                                     "simpleResponse": {
-                                        "textToSpeech": text
+                                        "textToSpeech": text,
+                                        "displayText": text
                                     }
                                 },
-                                {
-                                    basicCard
-                                }
+                                basicCard
                             ]
                         }
                     }
