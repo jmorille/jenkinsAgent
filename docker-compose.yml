@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 services:
   jenkins:
     image: jenkins/jenkins
@@ -9,3 +9,21 @@ services:
     ports:
       - "8080:8080" 
       - "50000:50000"
+    gitlab:
+      image: "gitlab/gitlab-ce:latest"
+      restart: always
+      hostname: "thor"
+      environment:
+        GITLAB_OMNIBUS_CONFIG: |
+          external_url "https://thor"
+          # Add any other gitlab.rb configuration here, each on its own line
+          gitlab_rails['gitlab_shell_ssh_port'] = 2224
+      ports:
+        - "80:80"
+        - "443:443"
+        - "2224:22"
+      volumes:
+        - "./data/gitlab/config:/etc/gitlab"
+        - "./data/gitlab/logs:/var/log/gitlab"
+        - "./data/gitlab/data:/var/opt/gitlab"
+
