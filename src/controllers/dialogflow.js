@@ -1,4 +1,5 @@
-const uuidv4 = require('uuid/v4');
+//const uuidv4 = require('uuid/v4');
+const htmlparser = require('htmlparser2');
 
 
 const jenkinsConfig = require("../config/jenkins.json");
@@ -44,11 +45,70 @@ exports.intent = ctx => {
         //console.error('My response : ', JSON.stringify(body, undefined, 2));
         ctx.body = body;
     }).catch(err => {
-        ctx.body = {
-            "fulfillmentText": "C'est embarassant, il y a une petite erreur technique"
+        // Print Error message
+        console.error(err.statusCode, err.message);
+        // Manage Dialog response
+        if (err.dialogRes) {
+            ctx.body = err.dialogRes;
+        } else {
+            ctx.body = {
+                "fulfillmentText": "C'est embarassant, il y a une petite erreur technique"
+            }
         }
+
     })
 };
+
+function parseJenkinsErrorPage(html) {
+    if (!html) return '';
+    // Prepare Iteration
+    let isBody = false;
+    let isStacktrace = false;
+    let divCount = 0;
+    let stacktrace = "";
+    const parser = new htmlparser.Parser({
+        onopentag: function (name, attributes) {
+            if (isBody) {
+                if (name === "div") {
+                    divCount += 1;
+                    console.log('--- divCount OPEN = ', divCount);
+                } else if (name === 'pre') {
+                    isStacktrace = true;
+                }
+            } else if (name === "div" && 'error-description' === attributes.id) {
+                isBody = true;
+            }
+        },
+        ontext: function (text) {
+            if (isStacktrace) {
+                stacktrace += text;
+                stacktrace += "/n";
+            }
+        },
+        onclosetag: function (name) {
+            if (name === "body") {
+                isBody = false;
+            }
+            if (isBody) {
+                if (name === 'div') {
+                    divCount += -1;
+                    console.log('--- divCount CLOSE = ', divCount);
+
+                    if (divCount <= 0) {
+                        isBody = false;
+                    }
+                } else if (name === 'pre') {
+                    isStacktrace = false;
+                }
+
+            }
+        }
+    }, {decodeEntities: true});
+    parser.write(html);
+    parser.end();
+    return stacktrace;
+}
+
 
 function processV1Request(req) {
     console.log('-----> processV1 Request');
@@ -106,7 +166,8 @@ function handleAction(action, parameters) {
 
 function deployRelease(req, parameters) {
     let appName = parameters.app;
-    let name = `deploy-${appName}-release`;
+    let appCode = `${appName}`.toLocaleUpperCase();
+    let name = `deploy-${appCode}-pipeline`;
     return callJenkinsJob(name, parameters).then(res => {
         console.log('Jenkins Job : ', name, " ==> ", res);
         return res;
@@ -131,9 +192,103 @@ function releaseApp(req, parameters) {
     });
 }
 
-function callJenkinsJob(name, parameters) {
+const dialogFlowEnvs = {
+    'production': 'Production',
+    'recette': 'Recette',
+    'qualification': 'Qualification'
+
+};
+
+function getParamEnv(params) {
+    const env = params.env;
+    return dialogFlowEnvs[env] || env;
+
+}
+
+function generateErrorNotJenkinsJob({name}) {
+    const dialogErrMsg = {
+        "fulfillmentText": `Désolé, le Job Jenkins ${name} n'existe pas`
+    }
+    const err = new Error(`No Jenkins Job : ${name}`);
+    err.statusCode = 404;
+    err.dialogRes = dialogErrMsg;
+    return err;
+};
+
+function checkPromiseJobExist(exists, name) {
+    if (!exists) {
+        throw generateErrorNotJenkinsJob({name});
+    }
+    return exists;
+}
+
+function formatJenkinsErrorPromise(err, name , params) {
+    try {
+
+        let errResBody = err.res ? err.res.body : undefined;
+        let dialogMsg = `Erreur Jenkins sur l'appel du Job ${name}`;
+        if (err.statusCode) {
+            dialogMsg += ` avec le code http ${err.statusCode}`
+        }
+        const dialogRes = {
+            "fulfillmentText": dialogMsg
+        };
+        err.dialogRes = dialogRes;
+        // Parse Stacktrace
+        const stacktrace = parseJenkinsErrorPage(errResBody);
+        if (stacktrace) {
+            console.error(stacktrace);
+            const basicCard = {
+                "basicCard": {
+                    "title": `Erreur ${err.statusCode}`,
+                    "subtitle": `Stacktrace de ${name}`,
+                    "formattedText": `${stacktrace}`
+                }
+            };
+            const payload = {
+                "google": {
+                    "expectUserResponse": true,
+                    "richResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": dialogMsg,
+                                    "displayText": dialogMsg
+                                }
+                            },
+                            basicCard
+                        ]
+                    }
+                }
+            }
+            dialogRes.payload = payload;
+        }
+        throw err;
+    } catch (errMangaError) {
+        console.error("Error during catch the original Error", errMangaError);
+        throw err;
+    }
+}
+
+function callJenkinsJob(name, params) {
+    //const parameters = { "nexusVersion": "2.0.0.RELEASE" };
+    const version = "2.0.0.RELEASE";
+    const deployTo = getParamEnv(params);
+    const parameters = {deployTo, version};
     // TODO Add Paramters to jenkins query
-    return jenkins.job.build({name});
+    return jenkins.job.exists(name)
+        .then(exists => {
+            return checkPromiseJobExist(exists, name)
+        })
+        .then(exists => {
+            return jenkins.job.build({name, parameters})
+        })
+        .then(queueItemNumber => {
+            console.log("queueItemNumber : ", queueItemNumber, " for Jenkins job : ", name);
+            return {
+                "fulfillmentText": 'Mise en queue numéro ' + queueItemNumber
+            };
+        }).catch(err => { return formatJenkinsErrorPromise(err, name, params)} );
 }
 
 
@@ -145,9 +300,9 @@ function requestVersion(req, parameters) {
             const version = data.Version;
             const date = data.Date;
             let text;
-            console.log("data : " ,data);
-            console.log("version : " , version);
-            if(!version) {
+            console.log("data : ", data);
+            console.log("version : ", version);
+            if (!version) {
                 text = `La version de cette application n'a pas été trouvée `;
             } else {
                 text = `La ${envLabel} de ${app} en est en version ${version} `;

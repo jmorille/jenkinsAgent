@@ -23,10 +23,7 @@
   },
   "homepage": "https://github.com/jmorille/jenkinsAgent#readme",
   "dependencies": {
-    "actions-on-google": "^1.10.0",
-    "cson": "^5.1.0",
-    "dialogflow-fulfillment": "^0.3.0-beta.2",
-    "dist": "^0.1.2",
+    "htmlparser2": "^3.9.2",
     "jenkins": "^0.20.1",
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",
@@ -36,8 +33,7 @@
     "koa-logger": "^3.2.0",
     "koa-router": "^7.4.0",
     "node-fetch": "^2.1.1",
-    "properties": "^1.2.1",
-    "uuid": "^3.2.1"
+    "properties": "^1.2.1"
   },
   "devDependencies": {
     "nodemon": "^1.17.2",
