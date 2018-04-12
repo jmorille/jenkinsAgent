@@ -1,15 +1,5 @@
-//const uuidv4 = require('uuid/v4');
-const htmlparser = require('htmlparser2');
-
-
-const jenkinsConfig = require("../config/jenkins.json");
-const jenkins = require('jenkins')(Object.assign({}, jenkinsConfig));
-
-const appVersion = require('../service/appVersionService');
-
-const {deployRelease, compileApp, releaseApp} = require('./dialogJenkins');
-
-
+const {deployRelease, compileApp, releaseApp} = require('../dialog/dialogJenkins');
+const {requestVersion} = require('../dialog/dialogAppRequest');
 
 exports.index = ctx => {
     ctx.body = {
@@ -17,19 +7,8 @@ exports.index = ctx => {
     }
 };
 
-const envCodes = {
-    'production': 'prod',
-    'recette': 'rec',
-    'qualification': 'qa'
-
-};
-
-function getEnvCode(envLabel) {
-    return envCodes[envLabel] || envLabel;
-}
 
 // https://dialogflow.com/docs/reference/api-v2/rest/v2beta1/WebhookRequest
-
 exports.intent = ctx => {
     // console.log('Request ----------', JSON.parse(JSON.stringify( ctx.request.body)));
     const req = ctx.request.body;
@@ -62,55 +41,6 @@ exports.intent = ctx => {
     })
 };
 
-function parseJenkinsErrorPage(html) {
-    if (!html) return '';
-    // Prepare Iteration
-    let isBody = false;
-    let isStacktrace = false;
-    let divCount = 0;
-    let stacktrace = "";
-    const parser = new htmlparser.Parser({
-        onopentag: function (name, attributes) {
-            if (isBody) {
-                if (name === "div") {
-                    divCount += 1;
-                    console.log('--- divCount OPEN = ', divCount);
-                } else if (name === 'pre') {
-                    isStacktrace = true;
-                }
-            } else if (name === "div" && 'error-description' === attributes.id) {
-                isBody = true;
-            }
-        },
-        ontext: function (text) {
-            if (isStacktrace) {
-                stacktrace += text;
-                stacktrace += "/n";
-            }
-        },
-        onclosetag: function (name) {
-            if (name === "body") {
-                isBody = false;
-            }
-            if (isBody) {
-                if (name === 'div') {
-                    divCount += -1;
-                    console.log('--- divCount CLOSE = ', divCount);
-
-                    if (divCount <= 0) {
-                        isBody = false;
-                    }
-                } else if (name === 'pre') {
-                    isStacktrace = false;
-                }
-
-            }
-        }
-    }, {decodeEntities: true});
-    parser.write(html);
-    parser.end();
-    return stacktrace;
-}
 
 
 function processV1Request(req) {
@@ -168,53 +98,3 @@ function handleAction(action, parameters) {
 
 
 
-
-
-function requestVersion(req, parameters) {
-    const app = parameters.app;
-    const envLabel = parameters.env;
-    return appVersion.getVersion(app, getEnvCode(envLabel))
-        .then(data => {
-            const version = data.Version;
-            const date = data.Date;
-            let text;
-            console.log("data : ", data);
-            console.log("version : ", version);
-            if (!version) {
-                text = `La version de cette application n'a pas été trouvée `;
-            } else {
-                text = `La ${envLabel} de ${app} en est en version ${version} `;
-            }
-
-            // console.log("app version", data);
-            const basicCard = {
-                "basicCard": {
-                    "title": `Application ${app}`,
-                    "subtitle": `Environnement de ${envLabel}`,
-                    "formattedText": ` 
-                                         **Buildée le** ${date}  
-                                         **Commit** ${data.Commit}`
-
-                }
-            };
-            return {
-                "fulfillmentText": text,
-                "payload": {
-                    "google": {
-                        "expectUserResponse": true,
-                        "richResponse": {
-                            "items": [
-                                {
-                                    "simpleResponse": {
-                                        "textToSpeech": text,
-                                        "displayText": text
-                                    }
-                                },
-                                basicCard
-                            ]
-                        }
-                    }
-                }
-            }
-        });
-}

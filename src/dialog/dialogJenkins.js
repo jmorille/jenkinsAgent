@@ -1,8 +1,14 @@
 const jenkinsConfig = require("../config/jenkins.json");
 const jenkins = require('jenkins')(Object.assign({}, jenkinsConfig));
 
+const htmlparser = require('htmlparser2');
 
+// Entities
+// *************************
+const {getParamEnv} = require('./dialogEntity');
 
+// Jenkins Functions
+// *************************
 function deployRelease(req, parameters) {
     let appName = parameters.app;
     let appCode = `${appName}`.toLocaleUpperCase();
@@ -36,7 +42,8 @@ module.exports.compileApp = compileApp;
 module.exports.releaseApp = releaseApp;
 
 
-
+// Jenkins Call jobs
+// *************************
 function callJenkinsJob(name, params) {
     //const parameters = { "nexusVersion": "2.0.0.RELEASE" };
     const version = "2.0.0.RELEASE";
@@ -55,32 +62,14 @@ function callJenkinsJob(name, params) {
             return {
                 "fulfillmentText": 'Mise en queue numéro ' + queueItemNumber
             };
-        }).catch(err => { return formatJenkinsErrorPromise(err, name, params)} );
+        }).catch(err => {
+            return formatJenkinsErrorPromise(err, name, params)
+        });
 }
 
 
-
-/** ******************************** **/
-/** ******* Value Converters ******* **/
-/** ******************************** **/
-
-const dialogFlowEnvs = {
-    'production': 'Production',
-    'recette': 'Recette',
-    'qualification': 'Qualification'
-
-};
-
-function getParamEnv(params) {
-    const env = params.env;
-    return dialogFlowEnvs[env] || env;
-
-}
-
-/** ******************************** **/
-/** ******* Check Job Exists ******* **/
-/** ******************************** **/
-
+// Check Job Exists
+// *************************
 function checkPromiseJobExist(exists, name) {
     if (!exists) {
         throw generateErrorNotJenkinsJob({name});
@@ -98,12 +87,9 @@ function generateErrorNotJenkinsJob({name}) {
     return err;
 };
 
-/** ******************************** **/
-/** ******* Error Management ******* **/
-/** ******************************** **/
-
-
-function formatJenkinsErrorPromise(err, name , params) {
+// Error Management
+// *************************
+function formatJenkinsErrorPromise(err, name, params) {
     try {
 
         let errResBody = err.res ? err.res.body : undefined;
@@ -149,6 +135,57 @@ function formatJenkinsErrorPromise(err, name , params) {
         console.error("Error during catch the original Error", errMangaError);
         throw err;
     }
+}
+
+
+function parseJenkinsErrorPage(html) {
+    if (!html) return '';
+    // Prepare Iteration
+    let isBody = false;
+    let isStacktrace = false;
+    let divCount = 0;
+    let stacktrace = "";
+    const parser = new htmlparser.Parser({
+        onopentag: function (name, attributes) {
+            if (isBody) {
+                if (name === "div") {
+                    divCount += 1;
+                    console.log('--- divCount OPEN = ', divCount);
+                } else if (name === 'pre') {
+                    isStacktrace = true;
+                }
+            } else if (name === "div" && 'error-description' === attributes.id) {
+                isBody = true;
+            }
+        },
+        ontext: function (text) {
+            if (isStacktrace) {
+                stacktrace += text;
+                stacktrace += "/n";
+            }
+        },
+        onclosetag: function (name) {
+            if (name === "body") {
+                isBody = false;
+            }
+            if (isBody) {
+                if (name === 'div') {
+                    divCount += -1;
+                    console.log('--- divCount CLOSE = ', divCount);
+
+                    if (divCount <= 0) {
+                        isBody = false;
+                    }
+                } else if (name === 'pre') {
+                    isStacktrace = false;
+                }
+
+            }
+        }
+    }, {decodeEntities: true});
+    parser.write(html);
+    parser.end();
+    return stacktrace;
 }
 
 /** ******************************** **/
