@@ -37,5 +37,16 @@ function getVersion(app, env) {
         .then(data => properties.parse(data))
 }
 
+function fetchWrapper(url, options, timeout) {
+    return new Promise((resolve, reject) => {
+        fetch(url, options).then(resolve).catch(reject);
+
+        if (timeout) {
+            const e = new Error("Connection timed out");
+            setTimeout(reject, timeout, e);
+        }
+    });
+}
+
 
 module.exports.getVersion = getVersion;

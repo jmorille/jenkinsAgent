@@ -42,7 +42,6 @@ exports.intent = ctx => {
 };
 
 
-
 function processV1Request(req) {
     console.log('-----> processV1 Request');
     let action = req.result.action; // https://dialogflow.com/docs/actions-and-parameters
@@ -73,7 +72,7 @@ function processV2Request(req) {
     console.log("action : ", action, " ---> parameters : ", parameters);
     // response
 
-    const actionRes = handleAction(action, parameters).then(actionRes => {
+    const actionRes = handleAction(action, parameters, req).then(actionRes => {
         console.log("Action response", JSON.stringify(actionRes));
         const res = {
             "outputContexts": req.queryResult.outputContexts
@@ -87,14 +86,66 @@ const actions = {
     'deploy': deployRelease.bind(this),
     'compile': compileApp.bind(this),
     'release': releaseApp.bind(this),
-    'versionRequest': requestVersion.bind(this)
+    'versionRequest': requestVersion.bind(this),
+    'authPerm': requestPerm.bind(this),
+    'userInfo': userInfo.bind(this)
 }
 
 
-function handleAction(action, parameters) {
+function handleAction(action, parameters, req) {
     const fn = actions[action];
-    return fn(action, parameters);
+    if (!fn) return new Promise(function (resolve, reject) {
+        const noActionMsg = {"fulfillmentText": "Action non trouvé"};
+        resolve(noActionMsg);
+    });
+    return fn(action, parameters, req);
 }
 
 
+function requestPerm() {
+    return new Promise(function (resolve, reject) {
+        const text = "Je souhaite te connaitre";
+        // "fulfillmentText": text,
+        // "https://wwww.googleapis.com/auth/userinfo.email"
+        const dialog = {
+            "payload": {
+                "google": {
+                    "conversationToken": "{'state':null,'data':{}}",
+                    "expectUserResponse": true,
+                    "systemIntent": {
+                        "intent": "actions.intent.PERMISSION",
+                        "inputValueData": {
+                            "@type": "type.googleapis.com/google.actions.v2.PermissionValueSpec",
+                            "optContext": "Pour accéder à Jenkins",
+                            "permissions": [
+                                "NAME",
+                                "DEVICE_PRECISE_LOCATION",
+                                "email"
+                            ]
+                        }
+                    }
 
+                }
+            }
+        }
+        resolve(dialog);
+    });
+}
+
+
+function userInfo(action, parameters, req) {
+    const googleInfo = req.originalDetectIntentRequest.payload;
+    require('fs').writeFile("user-info.json", JSON.stringify(googleInfo,undefined,2),err=>{
+        console.log("File saved");
+    })
+    const profile = googleInfo.user.profile;
+
+    console.log(googleInfo.user);
+    console.log(googleInfo.device);
+    return new Promise(function (resolve, reject) {
+       const msg =  {
+           "fulfillmentText": `Bonjour ${profile.displayName}, votre email est ${profile.email}`
+       };
+       resolve(msg);
+    });
+}
