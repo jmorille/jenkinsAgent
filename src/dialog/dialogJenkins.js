@@ -52,10 +52,10 @@ function callJenkinsJob(name, params) {
     // check and call Jobs
     return jenkins.job.exists(name)
         .then(exists => {
-            return checkPromiseJobExist(exists, name)
+            return checkPromiseJobExist(exists, name);
         })
         .then(exists => {
-            return jenkins.job.build({name, parameters})
+            return jenkins.job.build({name, parameters});
         })
         .then(queueItemNumber => {
             console.log("queueItemNumber : ", queueItemNumber, " for Jenkins job : ", name);
