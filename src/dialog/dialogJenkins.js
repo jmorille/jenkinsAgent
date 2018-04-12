@@ -49,7 +49,7 @@ function callJenkinsJob(name, params) {
     const version = "2.0.0.RELEASE";
     const deployTo = getParamEnv(params);
     const parameters = {deployTo, version};
-    // TODO Add Paramters to jenkins query
+    // check and call Jobs
     return jenkins.job.exists(name)
         .then(exists => {
             return checkPromiseJobExist(exists, name)
