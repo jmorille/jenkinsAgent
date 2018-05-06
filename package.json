@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --quiet",
+    "sec:check": "nsp check --reporter checkstyle",
     "server": "NODE_ENV=development  node --harmony src/index.js",
     "build": "webpack --mode='production'"
   },
@@ -37,6 +38,8 @@
   },
   "devDependencies": {
     "nodemon": "^1.17.2",
+    "nsp": "^3.2.1",
+    "nsp-reporter-checkstyle": "^1.1.0",
     "shebang-loader": "0.0.1",
     "webpack": "^4.3.0",
     "webpack-cli": "^2.0.13",
