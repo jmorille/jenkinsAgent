@@ -13,7 +13,6 @@ function getEnvCode(envLabel) {
 
 
 
-
 function requestVersion(req, parameters) {
     const app = parameters.app;
     const envLabel = parameters.env;
