@@ -20,7 +20,12 @@ server.use(expressWinston.logger({
     transports: [
         new winston.transports.Console({
             json: false,
-            colorize: true
+            colorize: true,
+            humanReadableUnhandledException: true,
+            prettyPrint: true
+        }),
+        new (winston.transports.File)({
+            filename: 'logs/jenkinAgent-http.log'
         })
     ]
 }));

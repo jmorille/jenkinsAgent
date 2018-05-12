@@ -3,9 +3,10 @@ const winston = require('winston');
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
-            colorize: true
+            colorize: true,
+            prettyPrint: true
         }),
-        new (winston.transports.File)({ filename: 'jenkinAgent.log' })
+        new (winston.transports.File)({ filename: 'logs/jenkinAgent.log' })
     ]
 });
 
