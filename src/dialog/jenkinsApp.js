@@ -9,7 +9,15 @@ const { BasicCard } = require('actions-on-google');
 // *************************
 function displayJenkinsError(conv, err, {app}) {
     const {jenkinsJob, stacktrace} = err.detail;
-    conv.ask(`Erreur Jenkins sur l'appel du Job ${jenkinsJob}`);
+    const {statusCode} = err;
+    switch (statusCode) {
+        case 404:
+            conv.ask(`le Job Jenkins "${jenkinsJob}" n'existe pas`);
+            break;
+        default:
+            conv.ask(`Erreur Jenkins sur l'appel du Job ${jenkinsJob}`);
+    }
+
     if (stacktrace) {
         conv.ask(new BasicCard({
             "title": `Erreur du Job ${jenkinsJob}`,
