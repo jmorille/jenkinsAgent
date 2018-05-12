@@ -2,6 +2,10 @@
 /data
 /src/config/dory.json
 
+# build
+/dist
+/build
+
 # Logs
 logs
 *.log

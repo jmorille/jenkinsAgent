@@ -24,10 +24,21 @@ function getAppUrl(app, env) {
         return (base[base.length - 1] === '/') ? `${base}version.txt` : `${base}/version.txt`;
     }
 }
+const envCodes = {
+    'production': 'prod',
+    'recette': 'rec',
+    'qualification': 'qa'
+
+};
+
+function getEnvCode(envLabel) {
+    return envCodes[envLabel] || envLabel;
+}
 
 
 function getVersion(app, env) {
-    const url = getAppUrl(app, env);
+    const envCode = getEnvCode(env);
+    const url = getAppUrl(app, envCode);
     console.log("Request version url :",url);
     return fetch(url)
         .then(res => res.text())
