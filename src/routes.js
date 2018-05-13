@@ -9,7 +9,7 @@ const packageInfo = require('../package.json');
 
 // Welcome page
 router.get('/',   (req, res) => {
-    res.send({
+    res.json({
         name: packageInfo.name,
         version: packageInfo.version,
         description: packageInfo.description

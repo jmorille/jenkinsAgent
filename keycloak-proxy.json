@@ -8,7 +8,7 @@
       "base-path":"/",
       "adapter-config":{
         "realm":"dory",
-        "auth-server-url":"http://d27f04a5.ngrok.io/auth",
+        "auth-server-url":"http://thor:8080/auth",
         "ssl-required":"external",
         "resource":"dory-app",
         "public-client": true,
