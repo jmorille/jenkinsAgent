@@ -1,0 +1,8 @@
+{
+  "realm": "dory",
+  "auth-server-url": "http://thor:8080/auth",
+  "ssl-required": "external",
+  "resource": "jenkins-agent-node",
+  "public-client": true,
+  "confidential-port": 0
+}
