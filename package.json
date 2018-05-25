@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Jenkins Agent",
   "main": "src/index.js",
+  "mode": "esm",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_ENV=test mocha 'test/**/*.spec.js'",
     "dev": "nodemon --quiet",
     "sec:check": "nsp check --reporter checkstyle",
     "server": "NODE_ENV=development  node --harmony src/index.js",
@@ -40,10 +41,13 @@
     "winston": "^2.4.2"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
     "nodemon": "^1.17.4",
     "nsp": "^3.2.1",
     "nsp-reporter-checkstyle": "^1.1.0",
     "shebang-loader": "0.0.1",
+    "sinon": "^5.0.7",
     "ts-loader": "^4.3.0",
     "typescript": "^2.8.3",
     "webpack": "^4.8.1",

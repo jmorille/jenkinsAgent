@@ -60,4 +60,6 @@ function fetchWrapper(url, options, timeout) {
 }
 
 
-module.exports.getVersion = getVersion;
+module.exports = {
+    getVersion
+};
