@@ -1,6 +1,6 @@
 const log = require('../logger');
 
-const { BasicCard } = require('actions-on-google');
+const { BasicCard, BrowseCarousel, BrowseCarouselItem} = require('actions-on-google');
 
 const versionDAO = require('../dao/versionAppDAO');
 
@@ -14,11 +14,29 @@ function versionApp(conv, {app, env} ) {
         } else {
             text = `La ${env} de ${app} en est en version ${version} `;
         }
-        conv.ask(new BasicCard({
-            "title": `Application ${app}`,
-            "subtitle": `Environnement de ${envLabel}`,
-            "text": `**Buildée le** ${date}  
-**Commit** ${data.Commit}`
+//         conv.ask(new BasicCard({
+//             "title": `Application ${app}`,
+//             "subtitle": `Environnement de ${envLabel}`,
+//             "text": `**Buildée le** ${date}
+// **Commit** ${data.Commit}`
+//         }));
+
+        // Create a browse carousel
+        conv.ask(new BrowseCarousel({
+            items: [
+                new BrowseCarouselItem({
+                    title: `${envLabel} de ${app}`,
+                    url: data.url,
+                    description: 'Description of item 1',
+                    footer: data.url,
+                }),
+                new BrowseCarouselItem({
+                    title: 'Title of item 2',
+                    url: data.url,
+                    description: 'Description of item 2',
+                    footer: 'Item 2 footer',
+                }),
+            ],
         }));
         return conv.ask(text);
     });

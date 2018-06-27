@@ -42,10 +42,15 @@ function getVersion(app, env) {
     console.log("Request version url :",url);
     return fetch(url)
         .then(res => res.text())
+        .then(parseVersionTxt)
         .then(data => {
-            return data.replace(': ','= ');
+            return {...data, url}
         })
-        .then(data => properties.parse(data))
+}
+
+function parseVersionTxt(data) {
+    const toParse = data.replace(': ','= ');
+    return properties.parse(toParse);
 }
 
 function fetchWrapper(url, options, timeout) {
