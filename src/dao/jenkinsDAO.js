@@ -146,21 +146,25 @@ function parseJenkinsErrorPage(html) {
 
 // Jenkins Apis
 // *************************
-
-function deployRelease(app, version, env) {
+function getAppJobCode(app) {
     const appCode = `${app}`.toLocaleUpperCase();
+    return appCode
+}
+
+function deployRelease(app, version, env, deployDate) {
+    const appCode = getAppJobCode(app);
     const name = `deploy-${appCode}-pipeline`;
-    return callJenkinsJob(name, {version, deployTo: getMenuEnvLabel(env)});
+    return callJenkinsJob(name, {version, deployTo: getMenuEnvLabel(env), deployDate});
 }
 
 function compileApp(app) {
-    const appCode = `${app}`.toLocaleUpperCase();
+    const appCode = getAppJobCode(app);
     const name = `ci-${appCode}-branch-dev`;
     return callJenkinsJob(name);
 }
 
 function releaseApp(app, version) {
-    const appCode = `${app}`.toLocaleUpperCase();
+    const appCode = getAppJobCode(app);
     const name = `ci-${appCode}-branch-dev`;
     return callJenkinsJob(name, version);
 }

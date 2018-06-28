@@ -36,6 +36,7 @@
     "htmlparser2": "^3.9.2",
     "jenkins": "^0.20.1",
     "keycloak-connect": "^4.0.0",
+    "moment": "^2.22.2",
     "node-fetch": "^2.1.2",
     "properties": "^1.2.1",
     "read-env": "^1.2.0",
