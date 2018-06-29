@@ -41,7 +41,8 @@ function parseDeployDate(dateStr) {
 
 // Dialogflow Intents Apis
 // *************************
-function deployRelease(conv, {app, env, version, deployDate} ) {
+function deployRelease(conv, {app, env, deployVersion, deployDate} ) {
+    const version = deployVersion ? deployVersion : "RELEASE";
     return jenkins.deployRelease(app, version, env, parseDeployDate(deployDate)).then(res => {
         log.info(`Deploy ${app} in ${env} (${res.queueItemNumber})`);
         conv.ask(`Je lance le job jenkins déploiement en ${env} pour l'application ${app}`);

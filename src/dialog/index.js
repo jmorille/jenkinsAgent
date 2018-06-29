@@ -2,7 +2,7 @@
 const {dialogflow} = require('actions-on-google');
 const { BasicCard, Button, Image} = require('actions-on-google');
 
-const app = dialogflow({debug: true});
+const app = dialogflow({debug: false});
 
 
 const versionApp = require('./versionApp');

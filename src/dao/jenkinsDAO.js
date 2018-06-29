@@ -28,7 +28,8 @@ function callJenkinsJob(name, params) {
     return jenkins.job.exists(name)
         .then(assertJenkinsJobExist(name))
         .then(exists => {
-            return jenkins.job.build({name, params})
+            //log.debug('---------------------------- ', {name,  parameters: params});
+            return jenkins.job.build({name,  parameters: params})
         })
         .then(queueItemNumber => {
             log.info("queueItemNumber : ", queueItemNumber, " for Jenkins job : ", name);
@@ -70,6 +71,9 @@ function generateErrorNotJenkinsJob({name}) {
 // *************************
 function formatJenkinsErrorPromise(err, name, params) {
     try {
+        log.error(err)
+        log.error(err.statusMessage)
+
         // Add error detail
         err.detail = {
             jenkinsJob: name,
@@ -105,7 +109,7 @@ function parseJenkinsErrorPage(html) {
             if (isBody) {
                 if (name === "div") {
                     divCount += 1;
-                    log.debug('--- divCount OPEN = ', divCount);
+                    //log.debug('--- divCount OPEN = ', divCount);
                 } else if (name === 'pre') {
                     isStacktrace = true;
                 }
@@ -126,7 +130,7 @@ function parseJenkinsErrorPage(html) {
             if (isBody) {
                 if (name === 'div') {
                     divCount += -1;
-                    log.debug('--- divCount CLOSE = ', divCount);
+                    //log.debug('--- divCount CLOSE = ', divCount);
 
                     if (divCount <= 0) {
                         isBody = false;
@@ -153,7 +157,7 @@ function getAppJobCode(app) {
 
 function deployRelease(app, version, env, deployDate) {
     const appCode = getAppJobCode(app);
-    const name = `deploy-${appCode}-pipeline`;
+    const name = `Deploy/deploy-${appCode}-pipeline`;
     return callJenkinsJob(name, {version, deployTo: getMenuEnvLabel(env), deployDate});
 }
 
