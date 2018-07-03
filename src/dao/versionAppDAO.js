@@ -1,3 +1,5 @@
+const log = require('../logger');
+
 const fetch = require('node-fetch');
 const properties = require("properties");
 const apps = require('../config/dory.json');
@@ -5,7 +7,6 @@ const apps = require('../config/dory.json');
 
 
 function getAppUrl(app, env) {
-
     let base;
     let dns;
     if(!(dns = apps[app][env]["url"])) {
@@ -32,11 +33,13 @@ const envCodes = {
 };
 
 function getEnvCode(envLabel) {
-    return envCodes[envLabel] || envLabel;
+    const env = Array.isArray(envLabel) ? envLabel[0] :envLabel;
+    return envCodes[env] || envLabel;
 }
 
 
 function getVersion(app, env) {
+    //log.info(`Get version of ${app} in ${env} =>`, typeof env), Array.isArray(env);
     const envCode = getEnvCode(env);
     const url = getAppUrl(app, envCode);
     console.log("Request version url :",url);
@@ -44,6 +47,7 @@ function getVersion(app, env) {
         .then(res => res.text())
         .then(parseVersionTxt)
         .then(data => {
+            log.info(`Get version of ${app} in ${env} =>`, data);
             return {...data, url}
         })
 }

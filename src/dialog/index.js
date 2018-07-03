@@ -8,7 +8,7 @@ const app = dialogflow({debug: false});
 const versionApp = require('./versionApp');
 const jenkinsApp = require('./jenkinsApp');
 
-app.intent('versionRequest',  versionApp.versionApp);
+app.intent('app-version',  versionApp.versionApp);
 
 app.intent('app-deploy', jenkinsApp.deployRelease);
 app.intent('app-compile', jenkinsApp.compileApp);
