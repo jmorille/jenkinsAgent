@@ -1,6 +1,25 @@
 Jenkins Agent
 ================
+## Certbot
 
+### Générate cetificats
+```
+docker run -it --rm --name certbot \
+  -v "$(pwd)/log/certbot:/var/log/letsencrypt" \
+  -v "$(pwd)/data/certs:/etc/letsencrypt" \
+  -v "$(pwd)/data/letsencrypt:/var/lib/letsencrypt" \
+  -p 80:80 \
+   certbot/certbot certonly --agree-tos --standalone \
+  -m jmorille+certbot@gmail.com -d put92-4-82-231-50-171.fbx.proxad.net
+```
+ 
+## Nginx
+
+### Check modules
+```
+docker run -t nginx:latest nginx -V 
+```
+            
 ## Dialg flow
 https://console.dialogflow.com
 

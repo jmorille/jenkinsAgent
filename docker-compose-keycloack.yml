@@ -1,21 +1,43 @@
 version: "3.5"
 services:
+  web:
+    image: nginx
+    volumes:
+      - ./data/certs:/etc/nginx/ssl:ro
+#      - ./nginx-keycloak.conf:/etc/nginx/conf.d/nginx-keycloak.conf:ro
+    ports:
+       - "80:80"
+       - "443:443"
+    environment:
+      - NGINX_HOST=put92-4-82-231-50-171.fbx.proxad.net
+      - NGINX_HTTPS_PORT=443
+    depends_on:
+      - keycloak
+    networks:
+      - keycloak-db-network
+#    command: /bin/bash -c "envsubst '\$NGINX_HOST \$NGINX_HTTPS_PORT' < /etc/nginx/conf.d/mysite.template"
+#    command: /bin/bash -c "envsubst '\$NGINX_HOST \$NGINX_HTTPS_PORT' < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+#      - ./nginx-keycloak.template:/etc/nginx/conf.d/mysite.template
+
+
+
   keycloak:
     image: "jboss/keycloak"
-    container_name: keycloak
     environment:
       KEYCLOAK_USER: "admin"
-      KEYCLOAK_PASSWORD: "admin"
+      KEYCLOAK_PASSWORD: "tameresucedesbitesenenfer"
       DB_VENDOR: "POSTGRES"
       DB_USER: "keycloak"
       DB_PASSWORD: "password"
       DB_ADDR: "keycloakDB"
+      PROXY_ADDRESS_FORWARDING: "true"
     ports:
       - "8080:8080"
     depends_on:
       - keycloakDB
     networks:
       - keycloak-db-network
+      - keycloak-db-network-backend
 
   keycloakDB:
     image: postgres
@@ -27,12 +49,14 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - "keycloakdbdata:/var/lib/postgresql/data/pgdata"
+      - "keycloak-db-data:/var/lib/postgresql/data/pgdata"
     networks:
       - keycloak-db-network
+      - keycloak-db-network-backend
 
 networks:
     keycloak-db-network:
+    keycloak-db-network-backend:
 
 volumes:
- keycloakdbdata:
+ keycloak-db-data:
