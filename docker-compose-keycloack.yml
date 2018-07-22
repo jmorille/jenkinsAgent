@@ -4,7 +4,7 @@ services:
     image: nginx
     volumes:
       - ./data/certs:/etc/nginx/ssl:ro
-#      - ./nginx-keycloak.conf:/etc/nginx/conf.d/nginx-keycloak.conf:ro
+      - ./nginx-keycloak.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
        - "80:80"
        - "443:443"
