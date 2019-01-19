@@ -1,17 +1,18 @@
+// express
 const express = require('express');
 const router = module.exports = new express.Router();
-
+// log
 const log = require('../logger');
-
-const versionDAO = require('../dao/versionAppDAO');
+// config
 const apps = require('../config/dory.json');
+// service
+const versionDAO = require('../dao/versionAppDAO');
 
 
 router.get('/v1/app/versions', (req, res) => {
     const promises = getAllAppVersions();
-    Promise.all(promises).then(appVersions => {
-        res.json(appVersions);
-    })
+    Promise.all(promises)
+        .then(appVersions => res.json(appVersions));
 });
 
 
@@ -28,20 +29,20 @@ function computeEnvWeigth(env) {
     if (match) {
         switch (match[1]) {
             case "dev":
-                group+= 100;
+                group += 100;
                 break;
             case "qa":
-                group+= 200;
+                group += 200;
                 break;
             case "rec":
-                group+= 300;
+                group += 300;
                 break;
             case "prod":
-                group+= 500;
+                group += 500;
                 break;
         }
         if (match[2]) {
-            group+= match[2];
+            group += match[2];
         }
     }
     return group;
@@ -50,9 +51,9 @@ function computeEnvWeigth(env) {
 function envComparator(a, b) {
     const aW = computeEnvWeigth(a);
     const bW = computeEnvWeigth(b);
-    if (aW>bW) {
+    if (aW > bW) {
         return 1;
-    } else if (aW<bW) {
+    } else if (aW < bW) {
         return -1;
     } else {
         return 0;
@@ -79,7 +80,6 @@ function getAppVersions(app, name) {
     // Construct version result
     return Promise.all(envsPromise).then(appVersions => {
             const versions = appVersions.reduce((acc, ver) => {
-                log.info(ver);
                 return {...acc, ...ver};
             }, {});
             return {name, versions}

@@ -45,20 +45,17 @@ function getAppUrlPromise(app, env) {
          try {
              const envCode = getEnvCode(env);
              const url = getAppUrl(app, envCode);
-             console.log("Request version url :",url);
              resolve(url);
          } catch (err) {
              reject(err);
          }
-     })
+     });
 }
 
 function getVersion(app, env) {
-    //log.info(`Get version of ${app} in ${env} =>`, typeof env), Array.isArray(env);
-    //const envCode = getEnvCode(env);
-    //const url = getAppUrl(app, envCode);
    return getAppUrlPromise(app, env).then(url => {
-       return fetch(url)
+       const opt = {};
+       return fetch(url, opt)
            .then(res => {
                if (res.ok) {
                    return res.text()
