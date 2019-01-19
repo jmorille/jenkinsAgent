@@ -3,6 +3,7 @@ const log = require('./logger');
 const express = require('express');
 const bodyParser = require('body-parser');
 const compression = require('compression');
+const logger = require('koa-logger');
 
 // server http
 const app = module.exports = express();
@@ -10,6 +11,7 @@ const app = module.exports = express();
 // Confif Middleware
 app.use(bodyParser.json());
 app.use(compression());
+app.use(logger());
 
 
 // express-winston logger makes sense BEFORE the router

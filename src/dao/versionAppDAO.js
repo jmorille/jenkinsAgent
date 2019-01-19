@@ -2,16 +2,20 @@ const log = require('../logger');
 
 const fetch = require('node-fetch');
 const properties = require("properties");
-const apps = require('../config/dory.json');
 
+const appDAO = require('../dao/appDAO');
 
 
 function getAppUrl(app, env) {
+    return appDAO.getAppById(app).then(appData => {
+        return computeAppUrl(appData, env);
+    })
+}
+
+function computeAppUrl(appData, env) {
     let base;
     let dns;
-    log.info("read env", env)
-    log.info("read app", app)
-    if(!(dns = apps[app][env]["url"])) {
+    if(!(dns = appData[env]["url"])) {
         throw new Error('Aucune URL trouvée pour cette application sur l\'environnement renseigné');
     } else {
 
@@ -40,20 +44,9 @@ function getEnvCode(envLabel) {
 }
 
 
-function getAppUrlPromise(app, env) {
-     return new Promise((resolve, reject) => {
-         try {
-             const envCode = getEnvCode(env);
-             const url = getAppUrl(app, envCode);
-             resolve(url);
-         } catch (err) {
-             reject(err);
-         }
-     });
-}
-
 function getVersion(app, env) {
-   return getAppUrlPromise(app, env).then(url => {
+    const envCode = getEnvCode(env);
+   return getAppUrl(app, envCode).then(url => {
        const opt = {};
        return fetch(url, opt)
            .then(res => {
@@ -69,7 +62,7 @@ function getVersion(app, env) {
            })
            .then(parseVersionTxt)
            .then(data => {
-               log.info(`Get version of ${app} in ${env} =>`, data);
+               log.debug(`Get version of ${app} in ${env} =>`, data);
                return {...data, url}
            })
    });
