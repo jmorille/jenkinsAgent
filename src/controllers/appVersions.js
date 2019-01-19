@@ -21,6 +21,44 @@ function getAllAppVersions(req) {
     });
 }
 
+function computeEnvWeigth(env) {
+    const envPattern = /([a-z]+)([0-9])?/
+    const match = envPattern.exec(env);
+    let group = 0;
+    if (match) {
+        switch (match[1]) {
+            case "dev":
+                group+= 100;
+                break;
+            case "qa":
+                group+= 200;
+                break;
+            case "rec":
+                group+= 300;
+                break;
+            case "prod":
+                group+= 500;
+                break;
+        }
+        if (match[2]) {
+            group+= match[2];
+        }
+    }
+    return group;
+}
+
+function envComparator(a, b) {
+    const aW = computeEnvWeigth(a);
+    const bW = computeEnvWeigth(b);
+    if (aW>bW) {
+        return 1;
+    } else if (aW<bW) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
 function getAppVersions(app, name) {
     const envRegex = /(qa|rec|prod)([0-0]?)/;
     // Request All Version
@@ -28,6 +66,7 @@ function getAppVersions(app, name) {
         .filter(item => {
             return item[0].match(envRegex)
         })
+        .sort(envComparator)
         .map(item => {
             return versionDAO.getVersion(name, item[0])
                 .then(ver => {
