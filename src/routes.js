@@ -4,6 +4,7 @@ const express = require('express');
 const router = module.exports =  new express.Router();
 
 const dialog = require('./dialog/index');
+const appVersions = require('./controllers/appVersions');
 
 const packageInfo = require('../package.json');
 
@@ -16,6 +17,8 @@ router.get('/',   (req, res) => {
     });
 });
 
+// Version
+router.use(appVersions);
 
 // Dialogflow
 router.post('/', dialog);

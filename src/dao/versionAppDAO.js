@@ -9,6 +9,8 @@ const apps = require('../config/dory.json');
 function getAppUrl(app, env) {
     let base;
     let dns;
+    log.info("read env", env)
+    log.info("read app", app)
     if(!(dns = apps[app][env]["url"])) {
         throw new Error('Aucune URL trouvée pour cette application sur l\'environnement renseigné');
     } else {
@@ -38,18 +40,43 @@ function getEnvCode(envLabel) {
 }
 
 
+function getAppUrlPromise(app, env) {
+     return new Promise((resolve, reject) => {
+         try {
+             const envCode = getEnvCode(env);
+             const url = getAppUrl(app, envCode);
+             console.log("Request version url :",url);
+             resolve(url);
+         } catch (err) {
+             reject(err);
+         }
+     })
+}
+
 function getVersion(app, env) {
     //log.info(`Get version of ${app} in ${env} =>`, typeof env), Array.isArray(env);
-    const envCode = getEnvCode(env);
-    const url = getAppUrl(app, envCode);
-    console.log("Request version url :",url);
-    return fetch(url)
-        .then(res => res.text())
-        .then(parseVersionTxt)
-        .then(data => {
-            log.info(`Get version of ${app} in ${env} =>`, data);
-            return {...data, url}
-        })
+    //const envCode = getEnvCode(env);
+    //const url = getAppUrl(app, envCode);
+   return getAppUrlPromise(app, env).then(url => {
+       return fetch(url)
+           .then(res => {
+               if (res.ok) {
+                   return res.text()
+               } else {
+                   const httpError = new  Error(`HTTP Error ${res.status} : ${res.statusText}`);
+                   httpError.status = res.status;
+                   httpError.statusText = res.statusText;
+                   throw  httpError;
+               }
+
+           })
+           .then(parseVersionTxt)
+           .then(data => {
+               log.info(`Get version of ${app} in ${env} =>`, data);
+               return {...data, url}
+           })
+   });
+
 }
 
 function parseVersionTxt(data) {
