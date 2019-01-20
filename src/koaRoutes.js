@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const packageInfo = require('../package.json');
 
-const api = require('./controllers/index');
+const appVersions = require('./controllers/appVersions');
 
 // config
 const router = new Router();
@@ -15,10 +15,16 @@ router.get('/', (ctx, next) => {
         description: packageInfo.description
     };
 });
+// Apis
+const apiRouter = new Router({
+    prefix: '/v1'
+});
+[appVersions].forEach(apiCtl=> {
+    apiRouter.use(apiCtl.routes(), apiCtl.allowedMethods());
+});
 
 
-router.use(api.routes(), api.allowedMethods());
-
-
+// register all routes
+router.use(apiRouter.routes(), apiRouter.allowedMethods());
 
 module.exports = router;
