@@ -18,11 +18,10 @@ function computeAppUrl(appData, env) {
     if(!(dns = appData[env]["url"])) {
         throw new Error('Aucune URL trouvée pour cette application sur l\'environnement renseigné');
     } else {
-
-        if (dns.dmz) {
-            base = dns.dmz[0];
-        } else if (dns.lan) {
+        if (dns.lan) {
             base = dns.lan[0];
+        } else if (dns.dmz) {
+            base = dns.dmz[0];
         } else {
             throw new Error('Aucune adresse trouvée');
         }
