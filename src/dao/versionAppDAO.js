@@ -1,5 +1,6 @@
 const log = require('../logger');
 
+const http = require('http');
 const fetch = require('node-fetch');
 const properties = require("properties");
 
@@ -46,7 +47,13 @@ function getEnvCode(envLabel) {
 function getVersion(app, env) {
     const envCode = getEnvCode(env);
    return getAppUrl(app, envCode).then(url => {
-       const opt = {};
+        // config fetch
+       // const httpAgent = new http.Agent();
+       // httpAgent.maxSockets = 2;
+       const opt = {
+           timeout: 100
+       };
+       // do request
        return fetch(url, opt)
            .then(res => {
                if (res.ok) {
