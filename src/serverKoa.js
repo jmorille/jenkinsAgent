@@ -2,6 +2,7 @@ const Koa = require('koa');
 const router = require('./koaRoutes');
 const bodyParser = require('koa-bodyparser');
 const compress = require('koa-compress');
+const cors = require('@koa/cors');
 
 /**
  * Koa Server.
@@ -11,7 +12,9 @@ const app = module.exports = new Koa();
 // config
 app.use(bodyParser());
 app.use(compress());
-
+app.use(cors({
+    origin:'*'
+}));
 
 // look ma, error propagation!
 app.use((ctx, next) => {
